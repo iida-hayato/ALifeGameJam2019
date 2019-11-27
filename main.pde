@@ -10,10 +10,10 @@ bool artMode = false;
 
 // Population
 Life[] lifes;
-int populationSize = 1000;
-int initialResourceSize = 500;
+int populationSize = 4000;
+int initialResourceSize = 1000;
 int resourceGrowth = 4.01;
-int maxResourceSize = 500;
+int maxResourceSize = 5000;
 // Inspector
 int[] populationPerSpecies = [];
 float graphSize = 0.4;
@@ -559,23 +559,27 @@ class Life {
     other.bodyEnergy = 0;
     other.eaten();
   }
-  void unco(){
+  void unco(float e){
     if(populationOfResource > maxResourceSize) {
-     return
+     return;
     }
-    if(random(0,9)<=1){
-      for (int i = 0; i < 2; i++) {
-        float vx = random(-defaultMoveDistance*10, defaultMoveDistance*10);
-        float vy = random(-defaultMoveDistance*10, defaultMoveDistance*10);
+    if(random(0,1)<=1){
+
+//      for (int i = 0; i < 2; i++) {
+        float vx = random(-defaultMoveDistance, defaultMoveDistance);
+        float vy = random(-defaultMoveDistance, defaultMoveDistance);
         float positionx = position.x + vx;
         float positiony = position.y + vy;
         positionx = min(positionx, fieldWidth-10);
         positionx = max(positionx, 10);
         positiony = min(positiony, fieldHeight-10);
         positiony = max(positiony, 10);
+
         Life res = Life.makeResource(positionx, positiony, resourceSize * 0.3, new Gene(gene.uncoGene,gene.uncoGene,0));
+        res.bodyEnergy = e;
+
         lifes[lifes.length] = res;
-      }
+//     }
     }
   }
 
@@ -592,17 +596,17 @@ class Life {
 
     float vx = random(-defaultMoveDistance, defaultMoveDistance);
     float vy = random(-defaultMoveDistance, defaultMoveDistance);
-     unco()
     position.x += vx;
     position.y += vy;
 
-    float energyConsumption = (new PVector(vx, vy)).mag() * size * size * energyConsumptionRate 
+    float energyConsumption = (new PVector(vx, vy)).mag() * size * size * energyConsumptionRate ;
 
-    position.x = min(position.x, fieldWidth)
-    position.x = max(position.x, 0)
-    position.y = min(position.y, fieldHeight)
-    position.y = max(position.y, 0)
+    position.x = min(position.x, fieldWidth);
+    position.x = max(position.x, 0);
+    position.y = min(position.y, fieldHeight);
+    position.y = max(position.y, 0);
 
+    unco(energyConsumption);
     energy -= energyConsumption;
   }
   void draw(){
@@ -807,7 +811,7 @@ void draw(){
   });
 
   populationPerSpecies = populationPerSpecies.map(function(){return 0});
-  populationOfResource = 0;
+  int nextPopulationOfResource = 0;
 
 		for (int ii = 0; ii < walls.length; ii++) {
 			Wall wall = walls[ii]
@@ -828,7 +832,7 @@ void draw(){
     Life focus = lifes[i];
 
     if (lifes[i].type == "Resource"){
-      populationOfResource += 1;
+      nextPopulationOfResource += 1;
     }
     if(lifes[i].alive()){
       born = born.concat(lifes[i].update());
@@ -893,6 +897,7 @@ void draw(){
     }
     lifes[i].draw();
   }
+  populationOfResource = nextPopulationOfResource;
 
   lifes = lifes.filter( function( el ) { //死
     return killed.indexOf( el ) < 0;
